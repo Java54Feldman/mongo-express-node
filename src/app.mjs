@@ -13,7 +13,7 @@ const server = app.listen(port);
 server.on("listening", () =>
     console.log(`server is listening on port ${server.address().port}`)
 );
-app.use(express.json());
+app.use(express.json()); //middleware
 
 app.post("/mflix/comments", async (req, res) => {
     const commentDB = await mflixService.addComment(req.body);
@@ -21,27 +21,30 @@ app.post("/mflix/comments", async (req, res) => {
 });
 
 app.put("/mflix/comments", async (req, res) => {
+    //update comment
     //req.body {"commentId":<string>, "text":<string>}
-    const textCommentDB = await mflixService.updateComment(req.body);
-    res.status(200).end(JSON.stringify(textCommentDB));
+    const commentUpdated = await mflixService.updateCommentText(req.body);
+    res.status(200).end(JSON.stringify(commentUpdated));
 });
 
 app.delete("/mflix/comments/:id", async (req, res) => {
-    const commentId = req.params.id;
-    const commentDB = await mflixService.deleteComment(commentId);
-    res.status(200).end(JSON.stringify(commentDB));
+    // delete comment
+    // req.params.id - comment to delete
+    const deletedComment = await mflixService.deleteComment(req.params.id);
+    res.status(200).end(JSON.stringify(deletedComment));
 });
 
 app.get("/mflix/comments/:id", async (req, res) => {
-    const commentId = req.params.id;
-    const commentDB = await mflixService.getComment(commentId);
-    res.status(200).end(JSON.stringify(commentDB));
+    //get comment
+    // req.params.id - comment to get
+    const comment = await mflixService.getComment(req.params.id);
+    res.status(200).end(JSON.stringify(comment));
 });
 
 app.post("/mflix/movies/rated", async (req, res) => {
-    // find most imdb rated movies
+    //find most imdb rated movies
     // req.body {"year":<number>(optional), "genre":<string>(optional),
-    //           "cast":<string>(optional), "amount":<number>(mandatory)}
-    const mostRatedMovies = await mflixService.findMostRatedMovies(req.body);
-    res.status(200).end(JSON.stringify(mostRatedMovies));
+    // "acter":<string-regex>(optional), "amount":<number>(mandatary)}
+    const movies = await mflixService.getMostRatedMovies(req.body);
+    res.status(200).end(JSON.stringify(movies));
 });

@@ -24,60 +24,29 @@ export default class MflixService {
         return commentDB;
     }
 
-    async updateComment(textCommentDto) {
-        //req.body {"commentId":<string>, "text":<string>}
-        const result = await this.#commentsCollection.findOneAndUpdate(
-            { _id: ObjectId.createFromHexString(textCommentDto.commentId) },
-            { $set: { text: textCommentDto.text } },
-            { returnDocument: "after" }
-        );
-        return result;
+    async updateCommentText({ text, commentId }) {
+        const commentUpdated = await this.#commentsCollection.findOneAndUpdate(
+            { _id: ObjectId.createFromHexString(commentId) },
+            { $set: { text } },
+            { returnNewDocument: true });
+        return commentUpdated;
     }
-
-    async deleteComment(commentId) {
-        const result = await this.#commentsCollection.deleteOne({
-            _id: ObjectId.createFromHexString(commentId),
-        });
-        if (result.deletedCount === 1)
-            console.log("Successfully deleted one document.");
-        else
-            console.log("No documents matched the query. Deleted 0 documents.");
-        return result;
+    async deleteComment(id) {
+        const toDeleteComment = await this.getComment(id)
+        await this.#commentsCollection.deleteOne({"_id":toDeleteComment._id});
+        return toDeleteComment;
     }
-
-    async getComment(commentId) {
-        const result = await this.#commentsCollection.findOne({
-            _id: ObjectId.createFromHexString(commentId),
-        });
-        return result;
+    async getComment(id) {
+        const mongoId = ObjectId.createFromHexString(id);
+        const comment = await this.#commentsCollection.findOne({"_id":mongoId});
+        return comment;
     }
-
-    async findMostRatedMovies(filter) {
-        // find most imdb rated movies
-        // req.body {"year":<number>(optional), "genre":<string>(optional),
-        //           "cast":<string>(optional), "amount":<number>(mandatory)}
-        const matchStage = {};
-        if (filter.year) matchStage.year = filter.year;
-        if (filter.genre) matchStage.genres = filter.genre;
-        if (filter.cast) {
-            matchStage.cast = {
-                $elemMatch: {
-                    $regex: filter.cast,
-                    $options: "i", // case insensitive search
-                },
-            };
-        }
-        const pipeline = [
-            { $match: matchStage },
-            { $match: { "imdb.rating": { $gt: 0 } } },
-            { $sort: { "imdb.rating": -1 } },
-            { $limit: filter.amount },
-        ];
-        if (Object.keys(matchStage).length === 0) pipeline.shift();
-        const result = await this.#moviesCollection
-            .aggregate(pipeline)
-            .toArray();
-        return result;
+    async getMostRatedMovies({genre, acter, year, amount}) {
+        const filter = {...year && {year}, ...acter &&{cast: {'$regex':acter}},
+         ...genre && {genres:genre}, 'imdb.rating':{'$ne':''}}
+         const result = await this.#moviesCollection.find(filter)
+         .sort({'imdb.rating':-1}).limit(amount).toArray();
+         return result;
     }
 
     #toComment(commentDto) {
