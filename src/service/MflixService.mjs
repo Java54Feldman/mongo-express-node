@@ -1,4 +1,4 @@
-import { getError, notFoundError } from "../errors/error.mjs";
+import { notFoundError } from "../errors/error.mjs";
 import MongoConnection from "../mongo/MongoConnection.mjs";
 import { ObjectId } from "mongodb";
 

@@ -2,6 +2,7 @@ import express from "express";
 import MflixService from "./service/MflixService.mjs";
 import asyncHandler from "express-async-handler";
 import { validationMiddleware, valid } from "./middleware/validation.mjs";
+import { schemas } from "./middleware/schemas.mjs";
 
 const app = express();
 const port = process.env.PORT || 3500;
@@ -16,7 +17,7 @@ server.on("listening", () =>
     console.log(`server is listening on port ${server.address().port}`)
 );
 app.use(express.json()); //middleware json
-app.use(validationMiddleware); //custom middleware
+app.use(validationMiddleware(schemas)); //custom middleware
 app.use(valid);
 
 function errorHandler(error, req, res, next) {
@@ -68,7 +69,7 @@ app.post(
     asyncHandler(async (req, res) => {
         //find most imdb rated movies
         // req.body {"year":<number>(optional), "genre":<string>(optional),
-        // "acter":<string-regex>(optional), "amount":<number>(mandatary)}
+        // "actor":<string-regex>(optional), "amount":<number>(mandatory)}
         const movies = await mflixService.getMostRatedMovies(req.body);
         res.status(200).end(JSON.stringify(movies));
     })
