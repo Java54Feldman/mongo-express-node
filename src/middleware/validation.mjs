@@ -1,4 +1,4 @@
-import { badRequestError } from '../errors/error.mjs';
+import { badRequestError, getError } from '../errors/error.mjs';
 
 export function validationMiddleware(schemas) {
     return (req, res, next) => {
@@ -22,7 +22,7 @@ export function valid(req, res, next) {
         throw badRequestError(req.error_message);
     }
     if (!req.validated && req._body) {
-        throw badRequestError("Not validated")
+        throw getError(500, "Not validated")
     }
     next();
 }
