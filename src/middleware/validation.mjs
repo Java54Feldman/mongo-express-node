@@ -1,28 +1,41 @@
-import { badRequestError, getError } from '../errors/error.mjs';
-
-export function validationMiddleware(schemas) {
+// import Joi from 'joi'
+import { getError } from '../errors/error.mjs';
+export  function validateBody(schemas) {
     return (req, res, next) => {
-        const pathSchema = schemas[req.path];
-        if (pathSchema) {
-            const schema = pathSchema[req.method];
-            if (schema) {
-                const { error } = schema.validate(req.body);
-                req.validated = true;
-                if (error) {
-                    req.error_message = error.details[0].message;
-                }
-            }
+        if(req._body) {
+             const schema = schemas[req.path]?.[req.method];
+        if(schema) {
+           req.validated = true;
+           const {error} = schema.validate(req.body);
+           if (error) {
+             req.error_message = error.details[0]?.message;
+           }
         }
+        }
+       
         next();
-    };
-}
-
-export function valid(req, res, next) {
-    if (req.validated && req.error_message) {
-        throw badRequestError(req.error_message);
     }
-    if (!req.validated && req._body) {
-        throw getError(500, "Not validated")
+    
+}
+export function valid(req, res, next) {
+    if (req._body ) {
+        if(!req.validated) {
+            throw getError(500, `for ${req.method} request with body no validaton schema provided`);
+        }
+        if(req.error_message) {
+            throw getError(400, req.error_message);
+        }
+        
     }
     next();
+
+}
+export function validateParams(schema) {
+    return (req, res, next) => {
+        const {error} = schema.validate(req.params);
+        if(error) {
+            throw getError(400, error.details[0].message);
+        }
+        next();
+    }
 }
