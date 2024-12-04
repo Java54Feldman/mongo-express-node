@@ -3,18 +3,22 @@ import {
     ADD_ACCOUNT,
     ADD_UPDATE_COMMENT,
     GET_MOVIES_RATED,
+    UPDATE_PASSWORD,
 } from "../config/pathes.mjs";
-export const schemaObjectId = Joi.string().hex().length(24).required();
-export const schemaCommentUpdate = Joi.object({
+
+const schemaObjectId = Joi.string().hex().length(24).required();
+const schemaAccountId = Joi.string().min(4).required();
+const schemaPassword = Joi.string().min(8).required();
+const schemaCommentUpdate = Joi.object({
     commentId: schemaObjectId,
     text: Joi.string().required(),
 });
-export const schemaAddComment = Joi.object({
+const schemaAddComment = Joi.object({
     movie_id: schemaObjectId,
     email: Joi.string().email().required(),
     text: Joi.string(),
 });
-export const schemaGetRatedMovies = Joi.object({
+const schemaGetRatedMovies = Joi.object({
     year: Joi.number().integer(),
     genre: Joi.string().valid(
         "Adventure",
@@ -45,12 +49,18 @@ export const schemaGetRatedMovies = Joi.object({
     acter: Joi.string(),
     amount: Joi.number().integer().positive().required(),
 });
-export const schemaAddAccount = Joi.object(
+const schemaAddAccount = Joi.object(
    {
-      username: Joi.string().min(4).required(),
+      username: schemaAccountId,
       email: Joi.string().email(),
-      password: Joi.string().min(8).required()
+      password: schemaPassword
    }
+)
+const schemaUpdatePassword = Joi.object(
+    {
+        username: schemaAccountId,
+        password: schemaPassword
+    }
 )
 export const schemaParams = Joi.object({
     id: schemaObjectId,
@@ -66,6 +76,9 @@ const schemas = {
     },
     [ADD_ACCOUNT]: {
         POST: schemaAddAccount,
+    },
+    [UPDATE_PASSWORD]: {
+        PUT: schemaUpdatePassword,
     },
 };
 export default schemas;

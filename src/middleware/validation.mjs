@@ -1,4 +1,3 @@
-// import Joi from 'joi'
 import { getError } from '../errors/error.mjs';
 export  function validateBody(schemas) {
     return (req, res, next) => {
